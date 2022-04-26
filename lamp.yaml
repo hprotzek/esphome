@@ -1,0 +1,75 @@
+esphome:
+  name: lamp
+
+esp32:
+  board: nodemcu-32s
+
+logger:
+  level: DEBUG
+
+# Enable Home Assistant API
+api:
+  password: ""
+
+ota:
+  password: ""
+
+wifi:
+  networks:
+    - ssid: !secret wifi_ssid_home
+      password: !secret wifi_password_home
+    - ssid: !secret wifi_ssid_garten
+      password: !secret wifi_password_garten
+  ap:
+    ssid: "Lamp Fallback Hotspot"
+    password: !secret wifi_fallback_password
+
+captive_portal:
+
+web_server:
+ port: 80
+
+light:
+  - platform: neopixelbus
+    type: GRBW
+    variant: SK6812
+    pin: GPIO23
+    num_leds: 144
+    name: "The Lamp"
+    id: the_lamp
+
+sensor:
+  - platform: dht
+    pin: GPIO22
+    temperature:
+      name: "The Lamp Temp"
+      id: temp_sensor
+      on_value:
+        if:
+          condition:
+            sensor.in_range:
+              id: temp_sensor
+              above: 40.0
+          then:
+            - light.turn_off: the_lamp
+    humidity:
+      name: "The Lamp Humidity"
+    update_interval: 5s
+
+binary_sensor:
+  - platform: gpio
+    name: "The Lamp Button"
+    on_press:
+      then:
+        - light.toggle: the_lamp
+    on_release:
+      then:
+        - light.toggle: the_lamp
+    filters:
+      - delayed_on: 100ms
+      - delayed_off: 100ms
+    pin:
+      number: GPIO21
+      mode:
+        input: true
+        pulldown: true
