@@ -19,12 +19,18 @@ ota:
 wifi:
   ssid: !secret wifi_ssid_garten
   password: !secret wifi_password_garten
-  fast_connect: true
-  ap:
-    ssid: "Lamp Fallback Hotspot"
-    password: !secret wifi_fallback_password
+  fast_connect: false
+  reboot_timeout: 5min
+  manual_ip:
+    static_ip: !secret grube_static_ip
+    gateway: !secret grube_gateway
+    subnet: !secret grube_subnet
+    dns1: !secret grube_dns1
+#  ap:
+#    ssid: "Grube Fallback Hotspot"
+#    password: !secret wifi_fallback_password
 
-captive_portal:
+#captive_portal:
 
 i2c:
   sda: 21
@@ -54,16 +60,16 @@ switch:
   - platform: gpio
     pin: 13
     restore_mode: ALWAYS_ON
-    name: "Ultrasonic Sensor"
+    name: "Grube Ultrasonic Sensor"
 
 sensor:
   - platform: ultrasonic
     trigger_pin: 16
     echo_pin: 4
-    name: "Level"
+    name: "Grube Level"
     update_interval: 200ms
     pulse_time: 10us
-    timeout: 4.0m
+    timeout: 3.0m
     filters:
        - filter_out: nan
        - median:
@@ -72,11 +78,14 @@ sensor:
            send_first_at: 3
   - platform: bme280
     temperature:
-      name: "Temperature"
+      name: "Grube Temperature"
     humidity:
-      name: "Humidity"
+      name: "Grube Humidity"
     address: 0x76
     update_interval: 200ms
+#  - platform: wifi_signal
+#    name: "Grube WiFi Signal"
+#    update_interval: 60s
 
 #web_server:
 #  port: 80
@@ -98,21 +107,21 @@ mqtt:
       payload: 'ON'
       then:
         - deep_sleep.enter: deep_sleep_1
-    - topic: grube/sensor/level/state
+    - topic: grube/sensor/grube_level/state
       then:
         - lambda: |-
             id(level_counter) += 1;
             if ((id(ota_mode) == 0) && (id(level_counter) >= 1) && (id(temperature_counter) >= 1) && (id(humidity_counter) >= 1)) {
               id(deep_sleep_1).begin_sleep();
             }
-    - topic: grube/sensor/temperature/state
+    - topic: grube/sensor/grube_temperature/state
       then:
         - lambda: |-
             id(temperature_counter) += 1;
             if ((id(ota_mode) == 0) && (id(level_counter) >= 1) && (id(temperature_counter) >= 1) && (id(humidity_counter) >= 1)) {
               id(deep_sleep_1).begin_sleep();
             }
-    - topic: grube/sensor/humidity/state
+    - topic: grube/sensor/grube_humidity/state
       then:
         - lambda: |-
             id(humidity_counter) += 1;
@@ -121,6 +130,6 @@ mqtt:
             }
 
 deep_sleep:
-  run_duration: 1min
+  run_duration: 60min
   sleep_duration: 60min
   id: deep_sleep_1

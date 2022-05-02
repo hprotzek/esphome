@@ -37,10 +37,19 @@ light:
     num_leds: 144
     name: "The Lamp"
     id: the_lamp
+    effects:
+      - addressable_rainbow:
+      - addressable_color_wipe:
+      - addressable_scan:
+      - addressable_twinkle:
+      - addressable_random_twinkle:
+      - addressable_fireworks:
+      - addressable_flicker:
 
 sensor:
   - platform: dht
     pin: GPIO22
+    model: DHT22
     temperature:
       name: "The Lamp Temp"
       id: temp_sensor
