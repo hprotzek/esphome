@@ -10,8 +10,8 @@ logger:
   level: INFO
 
 # Enable Home Assistant API
-#api:
-#  password: ""
+api:
+  password: ""
 
 ota:
   password: ""
@@ -26,11 +26,11 @@ wifi:
     gateway: !secret grube_gateway
     subnet: !secret grube_subnet
     dns1: !secret grube_dns1
-#  ap:
-#    ssid: "Grube Fallback Hotspot"
-#    password: !secret wifi_fallback_password
+  ap:
+    ssid: "Grube Fallback Hotspot"
+    password: !secret wifi_fallback_password
 
-#captive_portal:
+captive_portal:
 
 i2c:
   sda: 21
@@ -67,14 +67,14 @@ sensor:
     trigger_pin: 16
     echo_pin: 4
     name: "Grube Level"
-    update_interval: 200ms
+    update_interval: 1s
     pulse_time: 10us
-    timeout: 3.0m
+    timeout: 4m
     filters:
        - filter_out: nan
        - median:
-           window_size: 7
-           send_every: 4
+           window_size: 5
+           send_every: 3
            send_first_at: 3
   - platform: bme280
     temperature:
@@ -82,54 +82,54 @@ sensor:
     humidity:
       name: "Grube Humidity"
     address: 0x76
-    update_interval: 200ms
-#  - platform: wifi_signal
-#    name: "Grube WiFi Signal"
-#    update_interval: 60s
+    update_interval: 1s
+  - platform: wifi_signal
+    name: "Grube WiFi Signal"
+    update_interval: 60s
 
-#web_server:
-#  port: 80
+web_server:
+  port: 80
 
-mqtt:
-  broker: !secret mqtt_broker_garten
-  username: !secret mqtt_user_garten
-  password: !secret mqtt_password_garten
-  birth_message:
-  will_message:
-  on_message:
-    - topic: grube/ota_mode
-      payload: 'ON'
-      then:
-        - lambda: |-
-            id(ota_mode) = 1;
-        - deep_sleep.prevent: deep_sleep_1
-    - topic: grube/sleep_mode
-      payload: 'ON'
-      then:
-        - deep_sleep.enter: deep_sleep_1
-    - topic: grube/sensor/grube_level/state
-      then:
-        - lambda: |-
-            id(level_counter) += 1;
-            if ((id(ota_mode) == 0) && (id(level_counter) >= 1) && (id(temperature_counter) >= 1) && (id(humidity_counter) >= 1)) {
-              id(deep_sleep_1).begin_sleep();
-            }
-    - topic: grube/sensor/grube_temperature/state
-      then:
-        - lambda: |-
-            id(temperature_counter) += 1;
-            if ((id(ota_mode) == 0) && (id(level_counter) >= 1) && (id(temperature_counter) >= 1) && (id(humidity_counter) >= 1)) {
-              id(deep_sleep_1).begin_sleep();
-            }
-    - topic: grube/sensor/grube_humidity/state
-      then:
-        - lambda: |-
-            id(humidity_counter) += 1;
-            if ((id(ota_mode) == 0) && (id(level_counter) >= 1) && (id(temperature_counter) >= 1) && (id(humidity_counter) >= 1)) {
-              id(deep_sleep_1).begin_sleep();
-            }
+#mqtt:
+#  broker: !secret mqtt_broker_garten
+#  username: !secret mqtt_user_garten
+#  password: !secret mqtt_password_garten
+#  birth_message:
+#  will_message:
+#  on_message:
+#    - topic: grube/ota_mode
+#      payload: 'ON'
+#      then:
+#        - lambda: |-
+#            id(ota_mode) = 1;
+#        - deep_sleep.prevent: deep_sleep_1
+#    - topic: grube/sleep_mode
+#      payload: 'ON'
+#      then:
+#        - deep_sleep.enter: deep_sleep_1
+#    - topic: grube/sensor/grube_level/state
+#      then:
+#        - lambda: |-
+#            id(level_counter) += 1;
+#            if ((id(ota_mode) == 0) && (id(level_counter) >= 1) && (id(temperature_counter) >= 1) && (id(humidity_counter) >= 1)) {
+#              id(deep_sleep_1).begin_sleep();
+#            }
+#    - topic: grube/sensor/grube_temperature/state
+#      then:
+#        - lambda: |-
+#            id(temperature_counter) += 1;
+#            if ((id(ota_mode) == 0) && (id(level_counter) >= 1) && (id(temperature_counter) >= 1) && (id(humidity_counter) >= 1)) {
+#              id(deep_sleep_1).begin_sleep();
+#            }
+#    - topic: grube/sensor/grube_humidity/state
+#      then:
+#        - lambda: |-
+#            id(humidity_counter) += 1;
+#            if ((id(ota_mode) == 0) && (id(level_counter) >= 1) && (id(temperature_counter) >= 1) && (id(humidity_counter) >= 1)) {
+#              id(deep_sleep_1).begin_sleep();
+#            }
 
-deep_sleep:
-  run_duration: 60min
-  sleep_duration: 60min
-  id: deep_sleep_1
+#deep_sleep:
+#  run_duration: 60min
+#  sleep_duration: 10min
+#  id: deep_sleep_1
